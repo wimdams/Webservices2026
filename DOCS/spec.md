@@ -39,7 +39,7 @@ Pixel order is left to right, top to down. Each frame has exactly `width * heigh
 > [!NOTE]
 > bliss stands for Binary Lightweight Interchangeable Spatial Structure
 
-A custom file format to minimally represent a 3d object. The format is little endian.
+A custom file format to minimally represent a 3d object. The byte order is little endian.
 
 The format is :
 
@@ -83,7 +83,7 @@ lcd_err_t LCD_img_display(char* filename);
 Displays the image with the specified file name.
 
 ```C
-lcd_err_t LCD_img_display_raw(struct Color* data, uint16_t height, uint16_t width);
+lcd_err_t LCD_img_display_raw(uint16_t* data, uint16_t height, uint16_t width);
 ```
 Displays the image from raw data.
 
