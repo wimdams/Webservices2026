@@ -46,7 +46,7 @@ The format is :
 - Header:
   - Magic number: u32
   - Version: u8
-  - Reserved: [u8, 3](Padding)
+  - Reserved: \[u8, 3] (Padding)
   - Number of vertices: u32
   - Number of edges: u32
 - Body:
