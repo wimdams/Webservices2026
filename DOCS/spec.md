@@ -132,9 +132,9 @@ typedef file* file_ID;
 file_ID* fs_search_files(const char* filename);
 ```
 Allows you to search the filesystem for one of the following:
-    - "\*":         all files
-    - "\*.png":     all files with a certain extention
-    - "file.ext":   specific file
+* `"*"`: all files
+* `"*.png"`: all files with a certain extension
+* `"file.ext"`: specific file
 
 The function returns a list of pointers to files that were found with the last element in the list being a NULL pointer.
 This list is heap-allocated and must be freed by the user. 
