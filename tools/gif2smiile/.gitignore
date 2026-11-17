@@ -1,0 +1,10 @@
+#Git ignore for gif2smiile project
+
+*.pro.user
+debug/
+Debug/
+release/
+Release/
+build/
+
+*.smiile
