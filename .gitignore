@@ -1,0 +1,34 @@
+# Build outputs
+**/Debug/
+**/Release/
+**/build/
+
+# Eclipse workspace metadata
+.metadata/
+**/.metadata/
+
+# IDE caches and temporary files
+**/.settings/language.settings.xml
+**/.settings/org.eclipse.cdt.core.prefs
+*.launch
+*.log
+*.tmp
+*.bak
+*.swp
+*~
+
+# Compiled binaries
+*.o
+*.obj
+*.a
+*.elf
+*.hex
+*.bin
+*.map
+*.list
+*.su
+*.cyclo
+*.d
+
+# Rust / Cargo
+**/target/
