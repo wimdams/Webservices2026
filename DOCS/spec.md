@@ -111,3 +111,45 @@ Displays an animation of the smiile format withe a given file name.
 lcd_err_t LCD_bliss_display(char* filename);
 ```
 displays a 3d object of the bliss format with a given file name.
+
+## Filesystem
+
+### What is a file?
+
+```C
+typedef struct file { 
+    char* file_name;        // file name including extention
+    uint32_t file_size;     // file size in bytes
+    void* file_startaddr;   // pointer to where the file starts
+} file;
+
+typedef file* file_ID;
+```
+
+### Functions
+
+```C
+file_ID* fs_search_files(const char* filename);
+```
+Allows you to search the filesystem for one of the following:
+    - "\*":         all files
+    - "\*.png":     all files with a certain extention
+    - "file.ext":   specific file
+
+The function returns a list of pointers to files that were found with the last element in the list being a NULL pointer.
+This list is heap-allocated and must be freed by the user. 
+
+```C
+const char* fs_get_filename(file_ID file);
+```
+Returns the filename associated with the fileID.
+
+```C
+uint32_t fs_get_filesize(file_ID file);
+```
+Returns the filesize of a file.
+
+```C
+void* fs_get_file_addr(file_ID file);
+```
+Returns a pointer to the start of a file.
