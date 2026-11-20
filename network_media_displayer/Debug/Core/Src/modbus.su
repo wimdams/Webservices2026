@@ -1,3 +1,0 @@
-../Core/Src/modbus.c:16:14:modbus_recv	344	static
-../Core/Src/modbus.c:56:14:modbus_accept	24	static
-../Core/Src/modbus.c:72:7:enable_modbus_server	16	static
