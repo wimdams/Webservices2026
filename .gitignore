@@ -19,7 +19,6 @@
 
 # Compiled binaries
 *.o
-*.obj
 *.a
 *.elf
 *.hex
