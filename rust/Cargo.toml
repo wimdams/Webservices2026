@@ -1,0 +1,8 @@
+[workspace]
+members = ["lcd"]
+resolver = "3"
+
+[profile.release]
+opt-level = "s"
+lto = true
+panic = "abort"
