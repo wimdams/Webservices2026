@@ -40,4 +40,61 @@ impl Framebuffer {
             }
         }
     }
+
+    pub fn draw_line(
+        &mut self,
+        x1: usize,
+        y1: usize,
+        x2: usize,
+        y2: usize,
+        thickness: usize,
+        width: usize,
+        height: usize,
+        color: u16,
+    ) {
+        if width == 0 || height == 0 {
+            return;
+        }
+
+        let (mut x, mut y) = (x1 as isize, y1 as isize);
+        let (x2, y2) = (x2 as isize, y2 as isize);
+
+        let dx = (x2 - x).abs();
+        let sx = if x < x2 { 1 } else { -1 };
+        let dy = -(y2 - y).abs();
+        let sy = if y < y2 { 1 } else { -1 };
+        let mut error = dx + dy;
+
+        let brush = thickness.max(1) as isize;
+        let before = (brush - 1) / 2;
+        let after = brush / 2;
+
+        loop {
+            for oy in -before..=after {
+                for ox in -before..=after {
+                    let px = x + ox;
+                    let py = y + oy;
+
+                    if px >= 0 && py >= 0 && px < width as isize && py < height as isize {
+                        self.set_pixel(px as usize, py as usize, color);
+                    }
+                }
+            }
+
+            if x == x2 && y == y2 {
+                break;
+            }
+
+            let twice_error = 2 * error;
+
+            if twice_error >= dy {
+                error += dy;
+                x += sx;
+            }
+            if twice_error <= dx {
+                error += dx;
+                y += sy;
+            }
+        }
+    }
 }

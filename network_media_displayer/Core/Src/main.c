@@ -110,7 +110,6 @@ int main(void)
   MX_FMC_Init();
   MX_LWIP_Init();
   MX_QUADSPI_Init();
-
   /* USER CODE BEGIN 2 */
   if (SDRAM_Startup() != HAL_OK) {
       Error_Handler();
@@ -118,14 +117,7 @@ int main(void)
 
   LCD_BL_Enable();
 
-  LCD_fill_rect(
-      (uint16_t *)LCD_FB0_ADDR,
-      LCD_WIDTH,
-      LCD_HEIGHT,
-      50, 50,
-      100, 80,
-      0x07E0  // Green rectangle
-  );
+  LCD_init();
 
   /* USER CODE END 2 */
 

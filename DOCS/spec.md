@@ -78,12 +78,12 @@ TODO
 ### Functions
 
 ```C
-lcd_err_t LCD_img_display(char* filename);
+lcd_err_t LCD_init();
 ```
-Displays the image with the specified file name.
+Initializes the screen.
 
 ```C
-lcd_err_t LCD_img_display_raw(uint16_t* data, uint16_t height, uint16_t width);
+lcd_err_t LCD_img_display_raw(uint16_t* data, uint16_t width, uint16_t height);
 ```
 Displays the image from raw data.
 
