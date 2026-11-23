@@ -19,6 +19,14 @@ const LTDC_SRCR: *mut u32 = (LTDC_BASE + 0x24) as *mut u32;
 const LTDC_LAYER0_CR: *mut u32 = (LTDC_BASE + 0x84) as *mut u32;
 const LTDC_LAYER1_CR: *mut u32 = (LTDC_BASE + 0x104) as *mut u32;
 
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct Color {
+    pub r: u8,
+    pub g: u8,
+    pub b: u8,
+}
+
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn LCD_init() -> u8 {
     unsafe {
@@ -122,6 +130,36 @@ pub extern "C" fn LCD_layer_enable(layer: u8, enable: bool) {
 
         LTDC_SRCR.write_volatile(1 << 1);
     }
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn LCD_img_display_raw(data: mut* u16, width: usize, height: usize) -> u8 {
+    0 // TODO
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn LCD_txt_display(text: &[u8]) -> u8 {
+    0 // TODO
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn LCD_txt_set_color(color: Color) -> u8 {
+    0 // TODO
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn LCD_bg_set_color(color: Color) -> u8 {
+    0 // TODO
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn LCD_smiile_display(filename: &[u8]) -> u8 {
+    0 // TODO
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn LCD_bliss_display(filename: &[u8]) -> u8 {
+    0 // TODO
 }
 
 #[panic_handler]
