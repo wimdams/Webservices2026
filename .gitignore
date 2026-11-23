@@ -9,7 +9,7 @@
 
 # IDE caches and temporary files
 **/.settings/language.settings.xml
-**/.settings/org.eclipse.cdt.core.prefs
+*.prefs
 *.launch
 *.log
 *.tmp
