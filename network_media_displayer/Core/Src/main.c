@@ -22,7 +22,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <cli.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -70,7 +70,19 @@ static void MX_QUADSPI_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+#include <errno.h>
+#include <sys/stat.h>
+#include <sys/times.h>
+#include <sys/unistd.h>
+int _write(int file, char *ptr, int len) {
+	for(int i = 0; i < len; i++){
+		if(ptr[i]=='\n'){
+			HAL_UART_Transmit(&huart1, (uint8_t*)"\r", 1, HAL_MAX_DELAY);
+		}
+		HAL_UART_Transmit(&huart1, (uint8_t*)&ptr[i], 1, HAL_MAX_DELAY);
+	}
+    return len;
+}
 /* USER CODE END 0 */
 
 /**
@@ -109,7 +121,7 @@ int main(void)
   MX_LWIP_Init();
   MX_QUADSPI_Init();
   /* USER CODE BEGIN 2 */
-
+  cli_init();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -119,6 +131,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	  MX_LWIP_Process();
   }
   /* USER CODE END 3 */
 }
