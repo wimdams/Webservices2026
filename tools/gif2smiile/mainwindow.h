@@ -25,9 +25,12 @@ public:
     ~MainWindow();
     void addFrames(QString imagePath);
     void convertFrame(QImage image, QDataStream &out, quint32 delay);
-
+    void addFramesIndexed(QString imagePath);
+    void convertFrameIndexed(QImage image, QDataStream &out, quint32 delay);
 private slots:
     void on_actionOpen_Gif_triggered();
+
+    void on_actionUse_CLUT_smaller_files_triggered();
 
 private:
     QByteArray m_qbaRawOutput;

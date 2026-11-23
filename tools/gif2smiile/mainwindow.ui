@@ -32,8 +32,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>409</width>
-         <height>360</height>
+         <width>392</width>
+         <height>322</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout">
@@ -43,6 +43,9 @@
        </layout>
       </widget>
      </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="CLUTWidget" name="clut" native="true"/>
     </item>
    </layout>
   </widget>
@@ -61,9 +64,28 @@
     </property>
     <addaction name="actionOpen_Gif"/>
    </widget>
+   <widget class="QMenu" name="menuSettings">
+    <property name="title">
+     <string>Settings</string>
+    </property>
+    <addaction name="actionUse_CLUT_smaller_files"/>
+   </widget>
    <addaction name="menu_File"/>
+   <addaction name="menuSettings"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionUse_CLUT_smaller_files"/>
+  </widget>
   <action name="actionOpen_Gif">
    <property name="icon">
     <iconset resource="res.qrc">
@@ -73,7 +95,31 @@
     <string>&amp;Open Gif</string>
    </property>
   </action>
+  <action name="actionUse_CLUT_smaller_files">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/res/16bit_non-indexed.png</normaloff>
+     <normalon>:/res/16bit_non-indexed.png</normalon>:/res/16bit_non-indexed.png</iconset>
+   </property>
+   <property name="text">
+    <string>Use CLUT (smaller files)</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>CLUTWidget</class>
+   <extends>QWidget</extends>
+   <header>clutwidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="res.qrc"/>
  </resources>

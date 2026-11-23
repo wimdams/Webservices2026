@@ -2,5 +2,7 @@
     <qresource prefix="/">
         <file>res/openfile.png</file>
         <file>res/Icon.png</file>
+        <file>res/8bit_indexed.png</file>
+        <file>res/16bit_non-indexed.png</file>
     </qresource>
 </RCC>
