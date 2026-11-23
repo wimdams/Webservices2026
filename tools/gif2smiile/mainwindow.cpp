@@ -14,7 +14,7 @@ MainWindow::MainWindow(QWidget *parent)
 void MainWindow::on_actionOpen_Gif_triggered()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
-         tr("Open Gif"), m_path, tr("Gif Files (*.gif)"));
+         tr("Open Gif"), m_path, tr("Gif Files (*.gif|*.png)"));
     if( !QFile::exists(fileName) )
         return;
     //Clear the ui
@@ -39,7 +39,7 @@ void MainWindow::on_actionOpen_Gif_triggered()
 void MainWindow::addFrames(QString imagePath)
 {
     QString outPath(imagePath);
-    outPath.replace(".gif",".smiile");
+    outPath.replace(QRegularExpression("\\.[a-zA-Z]{3,4}$"),".smiile");
     QD << outPath << imagePath;
     QFile outFile(outPath);
     if(!outFile.open(QFile::WriteOnly|QFile::Truncate)){
@@ -97,7 +97,7 @@ void MainWindow::convertFrame(QImage image, QDataStream &out, quint32 delay){
 void MainWindow::addFramesIndexed(QString imagePath)
 {
     QString outPath(imagePath);
-    outPath.replace(".gif",".smiile");
+    outPath.replace(QRegularExpression("\\.[a-zA-Z]{3,4}$"),".smiile");
     QD << outPath << imagePath;
     QFile outFile(outPath);
     if(!outFile.open(QFile::WriteOnly|QFile::Truncate)){
@@ -161,7 +161,7 @@ void MainWindow::addFramesIndexed(QString imagePath)
 }
 
 void MainWindow::convertFrameIndexed(QImage image, QDataStream &out, quint32 delay){
-    //Over de indexen lopen
+    // go over the indexies
     for (int y = 0; y < image.height(); ++y) {
         quint8 *line = reinterpret_cast<quint8*>(image.scanLine(y));
         for (int x = 0; x < image.width(); ++x) {
@@ -170,15 +170,6 @@ void MainWindow::convertFrameIndexed(QImage image, QDataStream &out, quint32 del
         }
     }
 
-    // for ( int y = 0; y < image.height(); y++ ){
-    //     for ( int x = 0; x < image.width(); x++ ){
-    //         QRgb simColor = image.pixel(x,y);
-    //         if((quint32) simColor > 255){
-    //             QD << "Error indexed color can't be higher than 255" << x << y << simColor;
-    //         }
-    //         out << (quint8)(simColor & 0xFF);
-    //     }
-    // }
     out << (quint16)delay;
 }
 
