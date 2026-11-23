@@ -25,8 +25,8 @@ static const char HELP[] =
   "  \r\n--------- These are all the commands that you can use: ---------\r\n"
   "  help                 Shows this list\r\n"
   "  text <text>         Displays text on LCD\r\n"
-  "  color <color>        Sets background color of the LCD\r\n"
-  "  textColor <color>    Sets the text color of the LCD\r\n"
+  "  color <color>        Sets background color of the LCD (RGBA format)\r\n"
+  "  textColor <color>    Sets the text color of the LCD (RGBA format)\r\n"
   "  listImages           Shows all available images\r\n"
   "  listAudio            Shows all available audio files\r\n"
   "  setImage <name>      Displays the choosen image on the LCD\r\n"
@@ -64,7 +64,28 @@ static bool cli_process_command(struct tcp_pcb *client, char *command){
 
 	if (strcmp(command, "help") == 0){
 		cli_send_str(client, HELP);
+	}/*
+	else if (strcmp(command, "text") == 0){
+		LCD_txt_display(arg);
 	}
+	else if (strcmp(command, "color") == 0){
+		LCD_bg_set_color(struct Color color);
+	}
+	else if (strcmp(command, "textColor") == 0){
+		LCD_txt_set_color(struct Color color);
+	}
+	else if (strcmp(command, "listImages") == 0){
+		fs_search_files(*.png);
+	}
+	else if (strcmp(command, "listAudio") == 0) {
+		fs_search_files(*.mp3);
+	}
+	else if (strcmp(command, "setImage") == 0){
+		LCD_img_display(char* filename);
+	}
+	else if (strcmp(command, "playAudio") == 0){
+
+	}*/
 	else if (strcmp(command, "exit") == 0){
 		cli_send_str(client, CLOSE);
 		tcp_close(client);
