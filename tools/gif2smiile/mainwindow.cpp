@@ -131,7 +131,6 @@ void MainWindow::addFramesIndexed(QString imagePath)
             isFirstFrame = false;
             int index_cntr;
             QByteArray buffer;
-            indexedImage.setColorCount(3);
             QList<QRgb> CLUT = indexedImage.colorTable();
             ui->clut->setCLUT(CLUT);
             for(index_cntr = 0; index_cntr < CLUT.length(); index_cntr++){
