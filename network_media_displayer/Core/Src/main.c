@@ -22,7 +22,13 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "modbus.h"
 
+//write-function includes
+#include <errno.h>
+#include <sys/stat.h>
+#include <sys/times.h>
+#include <sys/unistd.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -71,6 +77,31 @@ static void MX_QUADSPI_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+
+int _write(int file, char *ptr, int len) {
+    HAL_StatusTypeDef xStatus;
+    switch (file) {
+    case STDOUT_FILENO: /*stdout*/
+        xStatus = HAL_UART_Transmit(&huart1, (uint8_t*)ptr, len, HAL_MAX_DELAY);
+        if (xStatus != HAL_OK) {
+            errno = EIO;
+            return -1;
+        }
+        break;
+    case STDERR_FILENO: /* stderr */
+        xStatus = HAL_UART_Transmit(&huart1, (uint8_t*)ptr, len, HAL_MAX_DELAY);
+        if (xStatus != HAL_OK) {
+            errno = EIO;
+            return -1;
+        }
+        break;
+    default:
+        errno = EBADF;
+        return -1;
+    }
+    return len;
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -109,6 +140,7 @@ int main(void)
   MX_LWIP_Init();
   MX_QUADSPI_Init();
   /* USER CODE BEGIN 2 */
+  enable_modbus_server();
 
   /* USER CODE END 2 */
 
@@ -116,6 +148,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  MX_LWIP_Process();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
