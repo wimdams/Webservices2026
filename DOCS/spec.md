@@ -16,8 +16,8 @@ The format is:
   - Version: u8
   - Flags: u8
   - Lookup table length: u16 (0 when no LUT)
-  - Height of the image: u32
   - Width of the image: u32
+  - Height of the image: u32
   - Frame count: u32
 - Body:
   - (Optional) Lookup table:
