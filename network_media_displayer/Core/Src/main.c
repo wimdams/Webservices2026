@@ -23,6 +23,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "lcd.h"
+#include "lcd_bl.h"
 #include "sdram.h"
 /* USER CODE END Includes */
 
@@ -109,10 +110,22 @@ int main(void)
   MX_FMC_Init();
   MX_LWIP_Init();
   MX_QUADSPI_Init();
+
   /* USER CODE BEGIN 2 */
   if (SDRAM_Startup() != HAL_OK) {
       Error_Handler();
   }
+
+  LCD_BL_Enable();
+
+  LCD_fill_rect(
+      (uint16_t *)LCD_FB0_ADDR,
+      LCD_WIDTH,
+      LCD_HEIGHT,
+      50, 50,
+      100, 80,
+      0x07E0  // Green rectangle
+  );
 
   /* USER CODE END 2 */
 
@@ -297,6 +310,18 @@ static void MX_LTDC_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN LTDC_Init 2 */
+
+  if (HAL_LTDC_SetAddress(&hltdc, LCD_FB0_ADDR, 0) != HAL_OK) {
+      Error_Handler();
+  }
+
+  if (HAL_LTDC_SetAddress(&hltdc, LCD_FB1_ADDR, 1) != HAL_OK) {
+      Error_Handler();
+  }
+
+  if (HAL_LTDC_SetAlpha(&hltdc, 0, 1) != HAL_OK) {
+      Error_Handler();
+  }
 
   /* USER CODE END LTDC_Init 2 */
 

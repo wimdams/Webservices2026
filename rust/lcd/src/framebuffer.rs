@@ -29,4 +29,15 @@ impl Framebuffer {
             }
         }
     }
+
+    pub fn fill_rect(&mut self, x: usize, y: usize, width: usize, height: usize, color: u16) {
+        let x_end = x.saturating_add(width).min(self.width);
+        let y_end = y.saturating_add(height).min(self.height);
+
+        for py in y..y_end {
+            for px in x..x_end {
+                self.set_pixel(px, py, color);
+            }
+        }
+    }
 }
