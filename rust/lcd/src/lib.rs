@@ -133,7 +133,7 @@ pub extern "C" fn LCD_layer_enable(layer: u8, enable: bool) {
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn LCD_img_display_raw(data: mut* u16, width: usize, height: usize) -> u8 {
+pub extern "C" fn LCD_img_display_raw(data: *mut u16, width: usize, height: usize) -> u8 {
     0 // TODO
 }
 
