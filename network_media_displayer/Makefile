@@ -205,9 +205,9 @@ MCU = $(CPU) -mthumb $(FPU) $(FLOAT-ABI)
 AS_DEFS =
 
 # C defines
-C_DEFS =  \
+C_DEFS = \
 -DUSE_HAL_DRIVER \
--DSTM32F746xxMeatballs in Liège sauce with mashed potato
+-DSTM32F746xx
 
 
 # AS includes
@@ -272,13 +272,14 @@ RUST_MANIFEST = ../rust/Cargo.toml
 RUST_TARGET = thumbv7em-none-eabihf
 RUST_LIB = ../rust/target/$(RUST_TARGET)/release/liblcd.a
 
-RUST_SOURCES = $(shell find ../rust/lcd/src -name '*.rs')
+.PHONY: rust-build
 
-$(RUST_LIB): $(RUST_SOURCES) ../rust/lcd/Cargo.toml $(RUST_MANIFEST)
-	cargo clean
+rust-build:
 	cargo build --manifest-path $(RUST_MANIFEST) \
 		--target $(RUST_TARGET) --release
 
+$(RUST_LIB): | rust-build
+	@test -f $@ || (echo "Rust library not found: $@" && exit 1)
 #######################################
 # build the application
 #######################################
@@ -299,7 +300,7 @@ $(BUILD_DIR)/%.o: %.s Makefile | $(BUILD_DIR)
 $(BUILD_DIR)/%.o: %.S Makefile | $(BUILD_DIR)
 	$(AS) -c $(CFLAGS) $< -o $@
 
-$(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) Makefile
+$(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) $(RUST_LIB) Makefile | rust-build
 	$(CC) $(OBJECTS) $(RUST_LIB) $(LDFLAGS) -o $@
 	$(SZ) $@
 

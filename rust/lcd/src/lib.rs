@@ -138,7 +138,7 @@ pub extern "C" fn LCD_img_display_raw(data: *mut u16, width: usize, height: usiz
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn LCD_txt_display(text: &[u8]) -> u8 {
+pub extern "C" fn LCD_txt_display(text: *mut u8) -> u8 {
     0 // TODO
 }
 
@@ -153,12 +153,12 @@ pub extern "C" fn LCD_bg_set_color(color: Color) -> u8 {
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn LCD_smiile_display(filename: &[u8]) -> u8 {
+pub extern "C" fn LCD_smiile_display(filename: *mut u8) -> u8 {
     0 // TODO
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn LCD_bliss_display(filename: &[u8]) -> u8 {
+pub extern "C" fn LCD_bliss_display(filename: *mut u8) -> u8 {
     0 // TODO
 }
 
