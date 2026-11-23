@@ -2,7 +2,7 @@
 **/Debug/
 **/Release/
 **/build/
-
+**/.cache/
 # Eclipse workspace metadata
 .metadata/
 **/.metadata/

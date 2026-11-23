@@ -1,0 +1,38 @@
+CompileFlags:
+  # Target the STM32F746 (Cortex-M7) so clangd understands the MCU ABI
+  Add:
+    - --target=arm-none-eabi
+    - -mcpu=cortex-m7
+    - -mfpu=fpv5-sp-d16
+    - -mfloat-abi=hard
+    - -mthumb
+    - -DSTM32F746xx
+    - -DUSE_HAL_DRIVER
+    # Suppress warnings clangd generates for bare-metal headers
+    - -Wno-unknown-pragmas
+    - -Wno-gnu-include-next
+  # Strip flags the host clangd can't handle from compile_commands.json
+  Remove:
+    - -mcpu=*
+    - -mfpu=*
+    - -mfloat-abi=*
+    - -mthumb
+    - -specs=*
+    - -Wa,-a,-ad,-alms=*
+
+Diagnostics:
+  # Suppress noisy warnings in vendor/HAL code
+  Suppress:
+    - pp_including_mainfile_in_preamble
+  ClangTidy:
+    Add:
+      - readability-*
+      - bugprone-*
+    Remove:
+      - readability-magic-numbers
+      - readability-identifier-length
+
+InlayHints:
+  Enabled: Yes
+  ParameterNames: Yes
+  DeducedTypes: Yes
