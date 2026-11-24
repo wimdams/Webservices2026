@@ -275,7 +275,7 @@ RUST_LIB = ../rust/target/$(RUST_TARGET)/release/liblcd.a
 .PHONY: rust-build
 
 rust-build:
-	cargo build --manifest-path $(RUST_MANIFEST) \
+	cargo clean --manifest-path $(RUST_MANIFEST) && cargo build --manifest-path $(RUST_MANIFEST) \
 		--target $(RUST_TARGET) --release
 
 $(RUST_LIB): | rust-build
