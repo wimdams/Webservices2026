@@ -12,13 +12,13 @@ mod state;
 mod text;
 
 use framebuffer::Framebuffer;
-use state::LcdState;
+use state::{ImageState, LcdState};
 
 const LCD_WIDTH: usize = 480;
 const LCD_HEIGHT: usize = 272;
 
-const LCD_FB0_ADDR: usize = 0xC000_0000;
-const LCD_FB1_ADDR: usize = 0xC004_0000;
+const LCD_FB0_ADDR: usize = 0xC0000000;
+const LCD_FB1_ADDR: usize = 0xC0040000;
 
 const LTDC_BASE: usize = 0x4001_6800;
 const LTDC_SRCR: *mut u32 = (LTDC_BASE + 0x24) as *mut u32;
@@ -52,7 +52,11 @@ fn with_state<R>(f: impl FnOnce(&mut LcdState) -> R) -> R {
 fn redraw(fb: &mut Framebuffer, state: &LcdState) {
     fb.clear(state.background_color);
 
-    // TODO: draw_image(fb, &state.image);
+    if let Some(image) = state.image {
+        unsafe {
+            fb.draw_image(image.address as *const u16, image.width, image.height);
+        }
+    }
 
     fb.fill_rect(LCD_WIDTH / 2 - 1, 0, 2, LCD_HEIGHT, 0x0000);
 
@@ -182,8 +186,33 @@ pub unsafe extern "C" fn LCD_fill_rect(
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn LCD_img_display_raw(_data: *const u16, _width: u16, _height: u16) -> u8 {
-    1 // TODO
+pub unsafe extern "C" fn LCD_img_display_raw(data: *const u16, width: u16, height: u16) -> u8 {
+    let width = width as usize;
+    let height = height as usize;
+
+    if data.is_null() {
+        return with_state(|state| {
+            state.image = None;
+            redraw_both(state);
+            0
+        });
+    }
+
+    if width == 0 || height == 0 || width > LCD_WIDTH / 2 || height > LCD_HEIGHT {
+        return 1;
+    }
+
+    with_state(|state| {
+        state.image = Some(ImageState {
+            address: data as usize,
+            width,
+            height,
+        });
+
+        redraw_both(state);
+    });
+
+    0
 }
 
 #[unsafe(no_mangle)]

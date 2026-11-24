@@ -38,7 +38,7 @@ void LCD_fill_rect(
     uint16_t color
 );
 
-lcd_err_t LCD_img_display_raw(uint16_t* data, uint16_t width, uint16_t height);
+lcd_err_t LCD_img_display_raw(const uint16_t* data, uint16_t width, uint16_t height);
 
 lcd_err_t LCD_txt_display(char* text);
 

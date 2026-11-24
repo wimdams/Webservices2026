@@ -83,9 +83,9 @@ lcd_err_t LCD_init();
 Initializes the screen.
 
 ```C
-lcd_err_t LCD_img_display_raw(uint16_t* data, uint16_t width, uint16_t height);
+lcd_err_t LCD_img_display_raw(const uint16_t* data, uint16_t width, uint16_t height);
 ```
-Displays the image from raw data.
+Displays the image from raw data. A null pointer removes current image.
 
 ```C
 lcd_err_t LCD_txt_display(char* text);

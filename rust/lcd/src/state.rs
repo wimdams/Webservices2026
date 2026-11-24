@@ -5,6 +5,14 @@ pub struct LcdState {
     pub text_color: u16,
     pub text: [u8; TEXT_CAPACITY],
     pub text_len: usize,
+    pub image: Option<ImageState>,
+}
+
+#[derive(Clone, Copy)]
+pub struct ImageState {
+    pub address: usize,
+    pub width: usize,
+    pub height: usize,
 }
 
 impl LcdState {
@@ -14,6 +22,7 @@ impl LcdState {
             text_color: 0x0000,
             text: [0; TEXT_CAPACITY],
             text_len: 0,
+            image: None,
         }
     }
 

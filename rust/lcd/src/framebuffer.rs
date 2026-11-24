@@ -97,4 +97,17 @@ impl Framebuffer {
             }
         }
     }
+
+    /// # Safety
+    /// `data` must point to at least width * height readable u16
+    /// pixels, and must not alias framebuffer memory being written.
+    pub unsafe fn draw_image(&mut self, data: *const u16, width: usize, height: usize) {
+        for y in 0..height {
+            for x in 0..width {
+                let color = unsafe { data.add(y * width + x).read() };
+
+                self.set_pixel(x, y, color);
+            }
+        }
+    }
 }
