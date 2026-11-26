@@ -10,8 +10,10 @@ public:
     explicit CLUTWidget(QWidget *parent = nullptr);
     void setCLUT(QList<QRgb> colors);
     void paintEvent(QPaintEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
 private:
     QList<QRgb> m_colors;
+    QPoint m_pos;
 
 signals:
 

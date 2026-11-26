@@ -14,7 +14,7 @@ MainWindow::MainWindow(QWidget *parent)
 void MainWindow::on_actionOpen_Gif_triggered()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
-         tr("Open Gif"), m_path, tr("Gif Files (*.gif|*.png)"));
+         tr("Open Gif"), m_path, tr("(animated) Image Files (*.gif *.png *.jpg *.jpeg *.bmp)"));
     if( !QFile::exists(fileName) )
         return;
     //Clear the ui
