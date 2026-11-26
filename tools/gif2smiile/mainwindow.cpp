@@ -14,7 +14,7 @@ MainWindow::MainWindow(QWidget *parent)
 void MainWindow::on_actionOpen_Gif_triggered()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
-         tr("Open Gif"), m_path, tr("(animated) Image Files (*.gif *.png *.jpg *.jpeg *.bmp)"));
+         tr("(animated) Image Files"), m_path, tr("(animated) Image Files (*.gif *.png *.jpg *.jpeg *.bmp)"));
     if( !QFile::exists(fileName) )
         return;
     //Clear the ui
@@ -151,7 +151,7 @@ void MainWindow::addFramesIndexed(QString imagePath)
             out << (quint32)m_reader->size().width(); //First width then height TODO: Change this in spec
             out << (quint32)m_reader->size().height();
             out << (quint32)m_reader->imageCount(); //Frame count
-            out << buffer;
+            out.writeRawData(buffer.data(),buffer.length());
         }
         convertFrameIndexed(indexedImage, out,delay);
     }
