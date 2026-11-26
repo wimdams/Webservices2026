@@ -22,7 +22,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "udp_discovery.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -109,13 +109,14 @@ int main(void)
   MX_LWIP_Init();
   MX_QUADSPI_Init();
   /* USER CODE BEGIN 2 */
-
+  UDP_Discovery_Init("Simon", "Vandevelde");
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    MX_LWIP_Process();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
