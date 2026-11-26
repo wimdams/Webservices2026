@@ -26,6 +26,7 @@
 #include "lcd_bl.h"
 #include "sdram.h"
 #include "tux_bliss.h"
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -112,19 +113,31 @@ int main(void)
   MX_LWIP_Init();
   MX_QUADSPI_Init();
   /* USER CODE BEGIN 2 */
+
   if (SDRAM_Startup() != HAL_OK) {
       Error_Handler();
   }
 
+  __HAL_LTDC_ENABLE(&hltdc);
+
   LCD_BL_Enable();
+
 
   LCD_init();
 
-  if (LCD_bliss_display_raw(tux_bliss, tux_bliss_len) != 0) {
-      LCD_txt_display("Invalid BLISS model");
-  } else {
-      LCD_txt_display("Rotating Tux");
-  }
+
+  HAL_GPIO_WritePin(
+      LED_GPIO_Port,
+      LED_Pin,
+      GPIO_PIN_SET
+  );
+
+  LCD_txt_display("Hello world");
+
+  uint8_t result = LCD_bliss_display_raw(
+      tux_bliss,
+      tux_bliss_len
+  );
 
   uint32_t last_tick = HAL_GetTick();
   /* USER CODE END 2 */
@@ -133,16 +146,17 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    /* USER CODE END WHILE */
+      /* USER CODE END WHILE */
 
-    /* USER CODE BEGIN 3 */
-    uint32_t now = HAL_GetTick();
-        uint32_t elapsed = now - last_tick;
+      /* USER CODE BEGIN 3 */
+	  uint32_t now = HAL_GetTick();
+	  uint32_t elapsed = now - last_tick;
 
-        if (elapsed >= 50) {
-            last_tick = now;
-            LCD_bliss_tick(elapsed);
-        }
+	  if (elapsed >= 50) {
+	      last_tick = now;
+	      LCD_bliss_tick(elapsed);
+	  }
+
   }
   /* USER CODE END 3 */
 }
@@ -329,6 +343,8 @@ static void MX_LTDC_Init(void)
   if (HAL_LTDC_SetAlpha(&hltdc, 0, 1) != HAL_OK) {
       Error_Handler();
   }
+
+  __HAL_LTDC_DISABLE(&hltdc);
 
   /* USER CODE END LTDC_Init 2 */
 

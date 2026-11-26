@@ -4,6 +4,9 @@ const HEADER_SIZE: usize = 16;
 const VERTEX_SIZE: usize = 12;
 const EDGE_SIZE: usize = 8;
 
+const SIN_ELEV: f32 = 0.42261826;
+const COS_ELEV: f32 = 0.9063078;
+
 #[derive(Clone, Copy)]
 pub struct Vertex {
     pub x: f32,
@@ -140,44 +143,52 @@ fn project(vertex: Vertex, sin_angle: f32, cos_angle: f32) -> (usize, usize) {
     let z = -vertex.x * sin_angle + vertex.z * cos_angle;
     let y = vertex.y;
 
-    const ELEVATION: f32 = 25.0_f32.to_radians();
-
-    let sin_elev = libm::sinf(ELEVATION);
-    let cos_elev = libm::cosf(ELEVATION);
-
-    let projected_y = y * cos_elev - z * sin_elev;
+    let projected_y = y * COS_ELEV - z * SIN_ELEV;
 
     let scale = 0.65;
 
     let sx = 119.5 + x * scale * 119.5;
     let sy = 135.5 - projected_y * scale * 135.5;
 
-    (sx.clamp(0.0, 239.0) as usize, sy.clamp(0.0, 271.0) as usize)
+    (sx.clamp(0.0, 238.0) as usize, sy.clamp(0.0, 271.0) as usize)
 }
 
+const MAX_VERTICES: usize = 2048;
+
 pub fn render(fb: &mut Framebuffer, model: &Bliss, angle: f32, color: u16) {
+    if model.vertex_count > MAX_VERTICES {
+        return;
+    }
+
     let sin_angle = libm::sinf(angle);
     let cos_angle = libm::cosf(angle);
+
+    let mut projected = [(0u16, 0u16); MAX_VERTICES];
+
+    for i in 0..model.vertex_count {
+        if let Some(vertex) = model.vertex(i) {
+            let (x, y) = project(vertex, sin_angle, cos_angle);
+
+            projected[i] = (x as u16, y as u16);
+        }
+    }
 
     for i in 0..model.edge_count {
         let Some(edge) = model.edge(i) else {
             continue;
         };
 
-        let Some(a) = model.vertex(edge.a as usize) else {
-            continue;
-        };
-        let Some(b) = model.vertex(edge.b as usize) else {
-            continue;
-        };
-
-        let (x0, y0) = project(a, sin_angle, cos_angle);
-        let (x1, y1) = project(b, sin_angle, cos_angle);
+        let (x0, y0) = projected[edge.a as usize];
+        let (x1, y1) = projected[edge.b as usize];
 
         fb.draw_line(
-            x0, y0, x1, y1, 1,   // Thickness
-            240, // Left-half width
-            272, // Screen height
+            x0 as usize,
+            y0 as usize,
+            x1 as usize,
+            y1 as usize,
+            1,
+            240,
+            272,
             color,
         );
     }

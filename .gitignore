@@ -3,7 +3,7 @@
 **/Release/
 **/build/
 
-# Generated files
+# Generated media files
 *.bliss
 *.smiile
 

@@ -275,11 +275,10 @@ RUST_LIB = ../rust/target/$(RUST_TARGET)/release/liblcd.a
 .PHONY: rust-build
 
 rust-build:
-	cargo clean --manifest-path $(RUST_MANIFEST) && cargo build --manifest-path $(RUST_MANIFEST) \
+	cargo build --manifest-path $(RUST_MANIFEST) \
 		--target $(RUST_TARGET) --release
 
-$(RUST_LIB): | rust-build
-	@test -f $@ || (echo "Rust library not found: $@" && exit 1)
+
 #######################################
 # build the application
 #######################################
@@ -300,9 +299,8 @@ $(BUILD_DIR)/%.o: %.s Makefile | $(BUILD_DIR)
 $(BUILD_DIR)/%.o: %.S Makefile | $(BUILD_DIR)
 	$(AS) -c $(CFLAGS) $< -o $@
 
-$(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) $(RUST_LIB) Makefile | rust-build
+$(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) Makefile rust-build
 	$(CC) $(OBJECTS) $(RUST_LIB) $(LDFLAGS) -o $@
-	$(SZ) $@
 
 $(BUILD_DIR)/%.hex: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 	$(HEX) $< $@

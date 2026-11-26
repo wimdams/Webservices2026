@@ -17,8 +17,6 @@ const START: u32 = 1;
 const TRANSFER_COMPLETE: u32 = 1 << 1;
 const ERRORS: u32 = (1 << 0) | (1 << 5);
 
-/// Fill a rectangular framebuffer region using DMA2D.
-///
 /// # Safety
 /// The destination must be valid for the entire transfer.
 /// DMA2D must not be used concurrently elsewhere.

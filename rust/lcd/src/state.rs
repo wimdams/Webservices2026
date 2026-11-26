@@ -1,7 +1,14 @@
 pub const TEXT_CAPACITY: usize = 1024;
 
+pub const DIRTY_MEDIA: u8 = 1 << 0;
+pub const DIRTY_TEXT: u8 = 1 << 1;
+
+pub const DIRTY_ALL: u8 = DIRTY_MEDIA | DIRTY_TEXT;
+
 #[derive(Clone, Copy)]
 pub struct LcdState {
+    pub dirty: [u8; 2],
+    pub front_buffer: usize,
     pub background_color: u16,
     pub text_color: u16,
     pub text: [u8; TEXT_CAPACITY],
@@ -27,6 +34,8 @@ pub struct BlissState {
 impl LcdState {
     pub const fn new() -> Self {
         Self {
+            dirty: [DIRTY_ALL; 2],
+            front_buffer: 0,
             background_color: 0xFFFF,
             text_color: 0x0000,
             text: [0; TEXT_CAPACITY],
@@ -34,6 +43,11 @@ impl LcdState {
             image: None,
             bliss: None,
         }
+    }
+
+    pub fn invalidate(&mut self, regions: u8) {
+        self.dirty[0] |= regions;
+        self.dirty[1] |= regions;
     }
 
     pub fn set_text(&mut self, text: &str) -> Result<(), ()> {

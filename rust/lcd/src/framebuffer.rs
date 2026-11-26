@@ -39,9 +39,9 @@ impl Framebuffer {
         let width = x_end - x;
         let height = y_end - y;
 
-        let address = unsafe { self.ptr.add(y * self.width + x) };
-
         if width * height >= 128 {
+            let address = unsafe { self.ptr.add(y * self.width + x) };
+
             let success = unsafe { dma2d::fill(address, self.width, width, height, color) };
 
             if success {

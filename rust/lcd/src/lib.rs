@@ -8,12 +8,14 @@ use core::{
 use cortex_m::interrupt::{self, Mutex};
 
 mod bliss;
+mod dma2d;
 mod framebuffer;
 mod state;
 mod text;
 
 use framebuffer::Framebuffer;
 use state::{BlissState, ImageState, LcdState};
+use state::{DIRTY_ALL, DIRTY_MEDIA, DIRTY_TEXT};
 
 const LCD_WIDTH: usize = 480;
 const LCD_HEIGHT: usize = 272;
@@ -27,7 +29,25 @@ const LTDC_SRCR: *mut u32 = (LTDC_BASE + 0x24) as *mut u32;
 const LTDC_LAYER0_CR: *mut u32 = (LTDC_BASE + 0x84) as *mut u32;
 const LTDC_LAYER1_CR: *mut u32 = (LTDC_BASE + 0x104) as *mut u32;
 
+const LCD_BUFFERS: [usize; 2] = [LCD_FB0_ADDR, LCD_FB1_ADDR];
+
+const LTDC_ISR: *const u32 = (LTDC_BASE + 0x38) as *const u32;
+
+const LTDC_ICR: *mut u32 = (LTDC_BASE + 0x3C) as *mut u32;
+
+const LTDC_IMR: u32 = 1 << 0;
+const LTDC_VBR: u32 = 1 << 1;
+
+const LTDC_LAYER0_CFBAR: *mut u32 = (LTDC_BASE + 0xAC) as *mut u32;
+
+const LTDC_RRIF: u32 = 1 << 3;
+
 static LCD_STATE: Mutex<RefCell<LcdState>> = Mutex::new(RefCell::new(LcdState::new()));
+
+const MEDIA_WIDTH: usize = LCD_WIDTH / 2;
+const DIVIDER_X: usize = MEDIA_WIDTH - 1;
+const DIVIDER_WIDTH: usize = 2;
+const TEXT_START_X: usize = DIVIDER_X + DIVIDER_WIDTH;
 
 #[repr(C)]
 #[derive(Clone, Copy)]
@@ -50,8 +70,8 @@ fn with_state<R>(f: impl FnOnce(&mut LcdState) -> R) -> R {
     })
 }
 
-fn redraw(fb: &mut Framebuffer, state: &LcdState) {
-    fb.clear(state.background_color);
+fn redraw_media(fb: &mut Framebuffer, state: &LcdState) {
+    fb.fill_rect(0, 0, DIVIDER_X, LCD_HEIGHT, state.background_color);
 
     if let Some(image) = state.image {
         unsafe {
@@ -67,30 +87,76 @@ fn redraw(fb: &mut Framebuffer, state: &LcdState) {
         bliss::render(fb, &model, model_state.angle, state.text_color);
     }
 
-    fb.fill_rect(LCD_WIDTH / 2 - 1, 0, 2, LCD_HEIGHT, 0x0000);
+    fb.fill_rect(DIVIDER_X, 0, DIVIDER_WIDTH, LCD_HEIGHT, 0x0000);
+}
+
+fn redraw_text(fb: &mut Framebuffer, state: &LcdState) {
+    fb.fill_rect(
+        TEXT_START_X,
+        0,
+        LCD_WIDTH - TEXT_START_X,
+        LCD_HEIGHT,
+        state.background_color,
+    );
 
     text::draw_text(state.text(), state.text_color, |x, y, color| {
         fb.set_pixel(x, y, color)
     });
 }
 
-fn redraw_both(state: &LcdState) {
-    for addr in [LCD_FB0_ADDR, LCD_FB1_ADDR] {
-        let mut fb = unsafe { Framebuffer::new(addr as *mut u16, LCD_WIDTH, LCD_HEIGHT) };
+fn redraw(fb: &mut Framebuffer, state: &LcdState) {
+    redraw_media(fb, state);
+    redraw_text(fb, state);
+}
 
-        redraw(&mut fb, state);
+fn redraw_back() {
+    let mut snapshot = with_state(|state| *state);
+
+    let back = snapshot.front_buffer ^ 1;
+    let dirty = snapshot.dirty[back];
+
+    if dirty == 0 {
+        return;
     }
+
+    let mut fb = unsafe { Framebuffer::new(LCD_BUFFERS[back] as *mut u16, LCD_WIDTH, LCD_HEIGHT) };
+
+    if dirty & DIRTY_MEDIA != 0 {
+        redraw_media(&mut fb, &snapshot);
+    }
+
+    if dirty & DIRTY_TEXT != 0 {
+        redraw_text(&mut fb, &snapshot);
+    }
+
+    swap_buffers(&mut snapshot);
+
+    with_state(|state| {
+        state.front_buffer = snapshot.front_buffer;
+        state.dirty[back] &= !dirty;
+    });
 }
 
 #[unsafe(no_mangle)]
 pub extern "C" fn LCD_init() -> u8 {
+    unsafe {
+        let cr = LTDC_LAYER0_CR.read_volatile();
+        LTDC_LAYER0_CR.write_volatile(cr | 1);
+
+        let cr = LTDC_LAYER1_CR.read_volatile();
+        LTDC_LAYER1_CR.write_volatile(cr & !1);
+
+        LTDC_LAYER0_CFBAR.write_volatile(LCD_FB0_ADDR as u32);
+
+        LTDC_SRCR.write_volatile(1);
+    }
+
     with_state(|state| {
         *state = LcdState::new();
-        redraw_both(state);
+        state.invalidate(DIRTY_ALL);
     });
 
-    LCD_layer_enable(0, true);
-    LCD_layer_enable(1, false);
+    redraw_back();
 
     0
 }
@@ -99,8 +165,10 @@ pub extern "C" fn LCD_init() -> u8 {
 pub extern "C" fn LCD_bg_set_color(color: Color) -> u8 {
     with_state(|state| {
         state.background_color = color.to_rgb565();
-        redraw_both(state);
+        state.invalidate(DIRTY_ALL);
     });
+
+    redraw_back();
 
     0
 }
@@ -109,8 +177,10 @@ pub extern "C" fn LCD_bg_set_color(color: Color) -> u8 {
 pub extern "C" fn LCD_txt_set_color(color: Color) -> u8 {
     with_state(|state| {
         state.text_color = color.to_rgb565();
-        redraw_both(state);
+        state.invalidate(DIRTY_ALL);
     });
+
+    redraw_back();
 
     0
 }
@@ -125,14 +195,21 @@ pub unsafe extern "C" fn LCD_txt_display(text: *const c_char) -> u8 {
         return 1;
     };
 
-    with_state(|state| {
+    let result = with_state(|state| {
         if state.set_text(text).is_err() {
             return 1;
         }
 
-        redraw_both(state);
+        state.invalidate(DIRTY_TEXT);
+
         0
-    })
+    });
+
+    if result == 0 {
+        redraw_back();
+    }
+
+    result
 }
 
 #[unsafe(no_mangle)]
@@ -200,12 +277,15 @@ pub unsafe extern "C" fn LCD_img_display_raw(data: *const u16, width: u16, heigh
     let height = height as usize;
 
     if data.is_null() {
-        return with_state(|state| {
+        with_state(|state| {
             state.image = None;
             state.bliss = None;
-            redraw_both(state);
-            0
+            state.invalidate(DIRTY_MEDIA);
         });
+
+        redraw_back();
+
+        return 0;
     }
 
     if width == 0 || height == 0 || width > LCD_WIDTH / 2 || height > LCD_HEIGHT {
@@ -218,9 +298,12 @@ pub unsafe extern "C" fn LCD_img_display_raw(data: *const u16, width: u16, heigh
             width,
             height,
         });
+
         state.bliss = None;
-        redraw_both(state);
+        state.invalidate(DIRTY_MEDIA);
     });
+
+    redraw_back();
 
     0
 }
@@ -259,8 +342,10 @@ pub unsafe extern "C" fn LCD_bliss_display_raw(data: *const u8, len: u32) -> u8 
             angle: 0.0,
         });
 
-        redraw_both(state);
+        state.invalidate(DIRTY_MEDIA);
     });
+
+    redraw_back();
 
     0
 }
@@ -271,8 +356,10 @@ pub extern "C" fn LCD_bliss_tick(elapsed_ms: u32) {
         return;
     }
 
-    let snapshot = with_state(|state| {
-        let model = state.bliss.as_mut()?;
+    let changed = with_state(|state| {
+        let Some(model) = state.bliss.as_mut() else {
+            return false;
+        };
 
         model.angle += elapsed_ms as f32 * 0.0004;
 
@@ -280,12 +367,41 @@ pub extern "C" fn LCD_bliss_tick(elapsed_ms: u32) {
             model.angle %= core::f32::consts::TAU;
         }
 
-        Some(state.clone())
+        state.invalidate(DIRTY_MEDIA);
+
+        true
     });
 
-    if let Some(state) = snapshot {
-        redraw_both(&state);
+    if changed {
+        redraw_back();
     }
+}
+
+fn swap_buffers(state: &mut LcdState) {
+    let back_buffer = state.front_buffer ^ 1;
+
+    cortex_m::asm::dsb();
+
+    unsafe {
+        LTDC_LAYER0_CFBAR.write_volatile(LCD_BUFFERS[back_buffer] as u32);
+
+        LTDC_SRCR.write_volatile(LTDC_VBR);
+
+        let mut timeout = 10_000_000u32;
+
+        while LTDC_SRCR.read_volatile() & LTDC_VBR != 0 {
+            if timeout == 0 {
+                debug_print(c"VBlank timeout\r\n".as_ptr());
+
+                return;
+            }
+
+            timeout -= 1;
+            core::hint::spin_loop();
+        }
+    }
+
+    state.front_buffer = back_buffer;
 }
 
 #[panic_handler]
