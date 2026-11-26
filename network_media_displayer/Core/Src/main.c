@@ -109,7 +109,7 @@ int main(void)
   MX_LWIP_Init();
   MX_QUADSPI_Init();
   /* USER CODE BEGIN 2 */
-  UDP_Discovery_Init("Simon", "Van de Velde");
+  UDP_Discovery_Init("Simon", "Vandevelde");
   /* USER CODE END 2 */
 
   /* Infinite loop */
