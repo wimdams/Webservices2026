@@ -1,5 +1,5 @@
 #include <stdint.h>
-
+#include <stddef.h>
 
 typedef struct file { 
     char* file_name;        // file name including extention
@@ -9,7 +9,7 @@ typedef struct file {
 
 typedef file* file_ID;
 
-
+uint8_t fs_init(const uint8_t* fs_base, size_t fs_total_size);
 file_ID* fs_search_files(const char* filename);
 const char* fs_get_filename(file_ID file);
 uint32_t fs_get_filesize(file_ID file);

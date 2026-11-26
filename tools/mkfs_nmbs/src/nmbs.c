@@ -157,6 +157,7 @@ int main(int argc, char *argv[]) {
 
     fprintf(out, "#include <stdint.h>\n");
     fprintf(out, "#include <stddef.h>\n\n");
+    fprintf(out, "__attribute__((section(\".ExtQSPIFlashSection\")))\n");
     fprintf(out, "const uint8_t fs_image[%zu] = {", total_image_size);
 
     for (size_t i = 0; i < total_image_size; i++) {
@@ -167,7 +168,7 @@ int main(int argc, char *argv[]) {
     }
 
     fprintf(out, "\n};\n\n");
-    fprintf(out, "const size_t fs_image_size = %zu;\n", total_image_size);
+    fprintf(out, "fs_image_size = %zu;\n", total_image_size);
 
     fclose(out);
     free(image);

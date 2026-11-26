@@ -22,7 +22,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "stm32746g_discovery_qspi.h"
+#include "filesystem.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -109,7 +110,13 @@ int main(void)
   MX_LWIP_Init();
   MX_QUADSPI_Init();
   /* USER CODE BEGIN 2 */
-
+  /*QSPI INIT*/
+  BSP_QSPI_Init();
+  BSP_QSPI_MemoryMappedMode();
+  WRITE_REG(QUADSPI->LPTR, 0xFFF);
+	
+  fs_init((uint8_t*)0x90000000, fs_image_size); 
+  
   /* USER CODE END 2 */
 
   /* Infinite loop */

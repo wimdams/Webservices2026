@@ -62,8 +62,9 @@ _Min_Stack_Size = 0x400; /* required amount of stack */
 /* Specify the memory areas */
 MEMORY
 {
-RAM (xrw)      : ORIGIN = 0x20000000, LENGTH = 320K
+RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 320K
 FLASH (rx)      : ORIGIN = 0x8000000, LENGTH = 1024K
+QSPI (xrw) 	: ORIGIN = 0x90000000, LENGTH = 16M
 }
 
 /* Define output sections */
@@ -193,7 +194,7 @@ SECTIONS
     . = ALIGN(8);
   } >RAM
 
-
+  .ExtQSPIFlashSection : { *(.ExtQSPIFlashSection) } >QSPI
 
   /* Remove information from the standard libraries */
   /DISCARD/ :
