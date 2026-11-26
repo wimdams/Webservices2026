@@ -25,6 +25,7 @@
 #include "lcd.h"
 #include "lcd_bl.h"
 #include "sdram.h"
+#include "tux_bliss.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -119,6 +120,13 @@ int main(void)
 
   LCD_init();
 
+  if (LCD_bliss_display_raw(tux_bliss, tux_bliss_len) != 0) {
+      LCD_txt_display("Invalid BLISS model");
+  } else {
+      LCD_txt_display("Rotating Tux");
+  }
+
+  uint32_t last_tick = HAL_GetTick();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -128,6 +136,13 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+    uint32_t now = HAL_GetTick();
+        uint32_t elapsed = now - last_tick;
+
+        if (elapsed >= 50) {
+            last_tick = now;
+            LCD_bliss_tick(elapsed);
+        }
   }
   /* USER CODE END 3 */
 }

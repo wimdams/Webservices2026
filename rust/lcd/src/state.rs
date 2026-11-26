@@ -1,11 +1,13 @@
 pub const TEXT_CAPACITY: usize = 1024;
 
+#[derive(Clone, Copy)]
 pub struct LcdState {
     pub background_color: u16,
     pub text_color: u16,
     pub text: [u8; TEXT_CAPACITY],
     pub text_len: usize,
     pub image: Option<ImageState>,
+    pub bliss: Option<BlissState>,
 }
 
 #[derive(Clone, Copy)]
@@ -13,6 +15,13 @@ pub struct ImageState {
     pub address: usize,
     pub width: usize,
     pub height: usize,
+}
+
+#[derive(Clone, Copy)]
+pub struct BlissState {
+    pub address: usize,
+    pub len: usize,
+    pub angle: f32,
 }
 
 impl LcdState {
@@ -23,6 +32,7 @@ impl LcdState {
             text: [0; TEXT_CAPACITY],
             text_len: 0,
             image: None,
+            bliss: None,
         }
     }
 

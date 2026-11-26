@@ -50,4 +50,11 @@ lcd_err_t LCD_smiile_display(char* filename);
 
 lcd_err_t LCD_bliss_display(char* filename);
 
+lcd_err_t LCD_bliss_display_raw(
+    const uint8_t *data,
+    uint32_t len
+);
+
+void LCD_bliss_tick(uint32_t elapsed_ms);
+
 #endif

@@ -1,3 +1,5 @@
+use crate::dma2d;
+
 pub struct Framebuffer {
     ptr: *mut u16,
     width: usize,
@@ -23,16 +25,29 @@ impl Framebuffer {
     }
 
     pub fn clear(&mut self, color: u16) {
-        for y in 0..self.height {
-            for x in 0..self.width {
-                self.set_pixel(x, y, color);
-            }
-        }
+        self.fill_rect(0, 0, self.width, self.height, color);
     }
 
     pub fn fill_rect(&mut self, x: usize, y: usize, width: usize, height: usize, color: u16) {
         let x_end = x.saturating_add(width).min(self.width);
         let y_end = y.saturating_add(height).min(self.height);
+
+        if x >= x_end || y >= y_end {
+            return;
+        }
+
+        let width = x_end - x;
+        let height = y_end - y;
+
+        let address = unsafe { self.ptr.add(y * self.width + x) };
+
+        if width * height >= 128 {
+            let success = unsafe { dma2d::fill(address, self.width, width, height, color) };
+
+            if success {
+                return;
+            }
+        }
 
         for py in y..y_end {
             for px in x..x_end {

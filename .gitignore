@@ -3,6 +3,10 @@
 **/Release/
 **/build/
 
+# Generated files
+*.bliss
+*.smiile
+
 # Eclipse workspace metadata
 .metadata/
 **/.metadata/

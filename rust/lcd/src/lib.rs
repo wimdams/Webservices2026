@@ -7,12 +7,13 @@ use core::{
 
 use cortex_m::interrupt::{self, Mutex};
 
+mod bliss;
 mod framebuffer;
 mod state;
 mod text;
 
 use framebuffer::Framebuffer;
-use state::{ImageState, LcdState};
+use state::{BlissState, ImageState, LcdState};
 
 const LCD_WIDTH: usize = 480;
 const LCD_HEIGHT: usize = 272;
@@ -56,6 +57,14 @@ fn redraw(fb: &mut Framebuffer, state: &LcdState) {
         unsafe {
             fb.draw_image(image.address as *const u16, image.width, image.height);
         }
+    } else if let Some(model_state) = state.bliss {
+        let data = unsafe {
+            core::slice::from_raw_parts(model_state.address as *const u8, model_state.len)
+        };
+
+        let model = unsafe { bliss::Bliss::from_validated(data) };
+
+        bliss::render(fb, &model, model_state.angle, state.text_color);
     }
 
     fb.fill_rect(LCD_WIDTH / 2 - 1, 0, 2, LCD_HEIGHT, 0x0000);
@@ -193,6 +202,7 @@ pub unsafe extern "C" fn LCD_img_display_raw(data: *const u16, width: u16, heigh
     if data.is_null() {
         return with_state(|state| {
             state.image = None;
+            state.bliss = None;
             redraw_both(state);
             0
         });
@@ -208,7 +218,7 @@ pub unsafe extern "C" fn LCD_img_display_raw(data: *const u16, width: u16, heigh
             width,
             height,
         });
-
+        state.bliss = None;
         redraw_both(state);
     });
 
@@ -223,6 +233,59 @@ pub extern "C" fn LCD_smiile_display(_filename: *const c_char) -> u8 {
 #[unsafe(no_mangle)]
 pub extern "C" fn LCD_bliss_display(_filename: *const c_char) -> u8 {
     1 // TODO
+}
+
+/// # Safety
+/// data must point to len readable bytes that remain
+/// valid and unchanged until the model is replaced.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn LCD_bliss_display_raw(data: *const u8, len: u32) -> u8 {
+    if data.is_null() || len == 0 {
+        return 1;
+    }
+
+    let bytes = unsafe { core::slice::from_raw_parts(data, len as usize) };
+
+    if bliss::Bliss::parse(bytes).is_err() {
+        return 1;
+    }
+
+    with_state(|state| {
+        state.image = None;
+
+        state.bliss = Some(BlissState {
+            address: data as usize,
+            len: len as usize,
+            angle: 0.0,
+        });
+
+        redraw_both(state);
+    });
+
+    0
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn LCD_bliss_tick(elapsed_ms: u32) {
+    if elapsed_ms == 0 {
+        return;
+    }
+
+    let snapshot = with_state(|state| {
+        let model = state.bliss.as_mut()?;
+
+        model.angle += elapsed_ms as f32 * 0.0004;
+
+        if model.angle >= core::f32::consts::TAU {
+            model.angle %= core::f32::consts::TAU;
+        }
+
+        Some(state.clone())
+    });
+
+    if let Some(state) = snapshot {
+        redraw_both(&state);
+    }
 }
 
 #[panic_handler]
