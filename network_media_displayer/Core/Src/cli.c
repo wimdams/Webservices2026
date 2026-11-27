@@ -18,32 +18,49 @@ static uint16_t cli_index = 0;
 static bool last_was_carr_return = false;
 
 static const char WELCOME[] =
-  "\r\n=== STM32 CLI ===\r\n"
-  "Welcome! These are the available commands:\r\n\r\n";
+		"\r\n=== STM32 CLI ===\r\n"
+		"Welcome! These are the available commands:\r\n\r\n";
 
 static const char HELP[] =
-  "  \r\n--------- These are all the commands that you can use: ---------\r\n"
-  "  help                 Shows this list\r\n"
-  "  text <text>         Displays text on LCD\r\n"
-  "  color <color>        Sets background color of the LCD (RGBA format)\r\n"
-  "  textColor <color>    Sets the text color of the LCD (RGBA format)\r\n"
-  "  listImages           Shows all available images\r\n"
-  "  listAudio            Shows all available audio files\r\n"
-  "  setImage <name>      Displays the choosen image on the LCD\r\n"
-  "  playAudio <name>     Plays the choosen audio file\r\n"
-  "  exit                 Closes tcp connection\r\n\r\n";
+		"  \r\n--------- These are all the commands that you can use: ---------\r\n"
+		"  help                 Shows this list\r\n"
+		"  text <text>         Displays text on LCD\r\n"
+		"  color <color>        Sets background color of the LCD (RGBA format)\r\n"
+		"  textColor <color>    Sets the text color of the LCD (RGBA format)\r\n"
+		"  listImages           Shows all available images\r\n"
+		"  listAudio            Shows all available audio files\r\n"
+		"  setImage <name>      Displays the choosen image on the LCD\r\n"
+		"  playAudio <name>     Plays the choosen audio file\r\n"
+		"  exit                 Closes tcp connection\r\n\r\n";
 
 static const char CLOSE[] =
-  "\r\n ------- This connection is closed ------- \r\n";
+		"\r\n ------- This connection is closed ------- \r\n";
+
+static const char ERROR_NEC[] =
+		"\r\n This command does not exist.\r\n";
+
+static const char ERROR_NA[] =
+	    "\r\nThe command '%s' needs an argument.\r\n"
+	    "Use the command 'help' to see all available commands with their arguments.\r\n\r\n";
 
 static const char PROMPT[] = "> ";
 
 static void cli_send_str(struct tcp_pcb *client, const char *s) {
-	err_t err = tcp_write(client, s, strlen(s), 0);
+	err_t err = tcp_write(client, s, strlen(s), TCP_WRITE_FLAG_COPY);
 	  if (err == ERR_OK) {
 	    err = tcp_output(client);
 	  }
 	  printf("cli_send_str: err=%d\r\n", err);
+}
+
+static bool cli_cmd_has_arg(struct tcp_pcb *client, const char *cmd, const char *arg){
+	if (*arg == '\0'){
+		char buf[200];
+		snprintf(buf, sizeof(buf), ERROR_NA, cmd);
+		cli_send_str(client, buf);
+		return false;          // geen argument
+	}
+	return true;               // argument aanwezig
 }
 
 static bool cli_process_command(struct tcp_pcb *client, char *command){
@@ -61,6 +78,12 @@ static bool cli_process_command(struct tcp_pcb *client, char *command){
 
 	printf("cmd = %s\r\n", cmd);
 	printf("arg = %s\r\n", arg);
+
+	if (strcmp(cmd, "text") == 0 || strcmp(cmd, "color") == 0 || strcmp(cmd, "textColor") == 0 || strcmp(cmd, "setImage") == 0 || strcmp(cmd, "playAudio") == 0) {
+		if (!cli_cmd_has_arg(client, cmd, arg)){
+			return false;
+		}
+	}
 
 	if (strcmp(command, "help") == 0){
 		cli_send_str(client, HELP);
@@ -90,6 +113,9 @@ static bool cli_process_command(struct tcp_pcb *client, char *command){
 		cli_send_str(client, CLOSE);
 		tcp_close(client);
 		return true;
+	} else {
+		cli_send_str(client, ERROR_NEC);
+		cli_send_str(client, HELP);
 	}
 	return false;
 }
