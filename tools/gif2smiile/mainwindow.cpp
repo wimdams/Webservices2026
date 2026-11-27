@@ -123,9 +123,10 @@ void MainWindow::addFramesIndexed(QString imagePath)
     while(m_reader->read(m_frame)) {
         QLabel * newLbl = new QLabel(ui->scrollWidget);
         m_layout->addWidget(newLbl,i/5,i%5); i++;
-        newLbl->setPixmap(QPixmap::fromImage(*m_frame));
+        //newLbl->setPixmap(QPixmap::fromImage(*m_frame)); //This shows the original image (RGB888)
         quint32 delay =  m_reader->nextImageDelay();
-        QImage indexedImage = m_frame->convertToFormat(QImage::Format_Indexed8);
+        QImage indexedImage = m_frame->convertToFormat(QImage::Format_Indexed8,Qt::ThresholdDither);
+        newLbl->setPixmap(QPixmap::fromImage(indexedImage)); //This shows the converted image (indexed)
         if(isFirstFrame){
             //We assume the pallete is the same for all frames!
             isFirstFrame = false;
@@ -147,7 +148,7 @@ void MainWindow::addFramesIndexed(QString imagePath)
                 buffer.append((quint8) ((color>>8)&0xFF));
 
             }
-            out << ((quint16) (0xFFFF & index_cntr)); //Lookup table length 0 = no CLUT
+            out << ((quint16) (0xFFFF & (index_cntr+1))); //Lookup table length
             out << (quint32)m_reader->size().width(); //First width then height TODO: Change this in spec
             out << (quint32)m_reader->size().height();
             out << (quint32)m_reader->imageCount(); //Frame count

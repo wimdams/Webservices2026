@@ -32,7 +32,7 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>392</width>
+         <width>366</width>
          <height>312</height>
         </rect>
        </property>
@@ -46,6 +46,13 @@
     </item>
     <item row="0" column="1">
      <widget class="CLUTWidget" name="clut" native="true"/>
+    </item>
+    <item row="0" column="2">
+     <widget class="QLabel" name="label">
+      <property name="text">
+       <string>test</string>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>
